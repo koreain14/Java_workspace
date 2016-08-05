@@ -45,10 +45,7 @@ public class ChatWin extends JFrame {
 			bt=new JButton("전송");
 			panel=new JPanel();
 
-			panel.add(txt);
-			panel.add(bt);
-	
-			
+				
 			// area를 센터에 부착!!
 			add(area, BorderLayout.CENTER);
 			add(panel, BorderLayout.SOUTH);
