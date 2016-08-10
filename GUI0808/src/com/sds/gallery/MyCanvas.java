@@ -21,10 +21,10 @@ import java.awt.Image;
 import java.awt.Toolkit;
 
 public class MyCanvas extends Canvas {
+	Image img;
 	Toolkit kit=Toolkit.getDefaultToolkit();
 	
 	// 위에서 얻은 Toolkit을 이용하여 이미지를 얻어올 수 있다!
-	Image img;
 	public MyCanvas() {
 		setBackground(Color.YELLOW);
 		img=kit.getImage("C:/Java_workspace/GUI0808/res/go2.jpg");

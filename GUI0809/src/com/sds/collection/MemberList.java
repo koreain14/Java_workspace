@@ -23,7 +23,6 @@ public class MemberList extends JFrame implements ActionListener {
 	JScrollPane scroll;
 	Dimension d;
 	TableModel model;
-	TableData td;
 	
 	public MemberList() {
 		lb_id = new JLabel("ID");
