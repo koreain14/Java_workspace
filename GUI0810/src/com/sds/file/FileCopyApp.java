@@ -8,6 +8,7 @@ import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.nio.channels.ShutdownChannelGroupException;
 
 import javax.swing.JButton;
 import javax.swing.JFileChooser;
@@ -27,7 +28,7 @@ public class FileCopyApp extends JFrame implements ActionListener {
 	FileOutputStream fos;
 	File file_open, file_save;
 	String path_open, path_save;
-	
+
 	public FileCopyApp() {
 		lb1 = new JLabel("원본");
 		lb2 = new JLabel("경로");
@@ -38,7 +39,6 @@ public class FileCopyApp extends JFrame implements ActionListener {
 		bt1 = new JButton("open");
 		bt2 = new JButton("save");
 		bt3 = new JButton("실행");
-	
 
 		// 오픈버튼과 리스터 연결
 		bt1.addActionListener(this);
@@ -99,7 +99,7 @@ public class FileCopyApp extends JFrame implements ActionListener {
 			while ((data = fis.read()) != -1) {
 				fos.write(data);
 			}
-
+			JOptionPane.showMessageDialog(this, "복사가 완료되었습니다.");
 		} catch (FileNotFoundException e) {
 			System.out.println("파일이 존재하지 않습니다.");
 		} catch (IOException e) {
@@ -118,6 +118,7 @@ public class FileCopyApp extends JFrame implements ActionListener {
 				}
 			}
 		}
+		
 	}
 
 	@Override
@@ -131,11 +132,10 @@ public class FileCopyApp extends JFrame implements ActionListener {
 			copyFile();
 		}
 	}
-	
 
 	public static void main(String[] args) {
 		new FileCopyApp();
-		new JOptionPane("복사가 완료되었습니다.");
+
 	}
 
 }
