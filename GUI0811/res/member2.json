@@ -1,0 +1,28 @@
+{
+	"members" : [
+		{
+			"name":"김고은",
+			"gender":"여성",
+			"age":"26",
+			"photo":"C:/Java_workspace/GUI0811/res/go8.jpg"
+		},
+		{
+			"name":"정우성",
+			"gender":"남성",
+			"age":"40",
+			"photo":"C:/"
+		},
+		{
+			"name":"김고은",
+			"gender":"여성",
+			"age":"26",
+			"photo":"C:/"
+		},
+		{
+			"name":"설현",
+			"gender":"여성",
+			"age":"22",
+			"photo":"C:/"
+		}
+	]
+}
