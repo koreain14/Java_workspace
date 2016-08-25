@@ -5,6 +5,8 @@ import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.WindowAdapter;
+import java.awt.event.WindowEvent;
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.IOException;
@@ -16,9 +18,14 @@ import java.net.UnknownHostException;
 import javax.swing.JButton;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
+import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JPasswordField;
 import javax.swing.JTextField;
+
+import org.json.simple.JSONObject;
+import org.json.simple.parser.JSONParser;
+import org.json.simple.parser.ParseException;
 
 public class LoginForm extends JFrame implements ActionListener {
 	JTextField tf;
@@ -127,7 +134,29 @@ public class LoginForm extends JFrame implements ActionListener {
 		try {
 			buffw.write(sb.toString() + "\n"); // toString 버퍼된거 스트링형으로 변환!!
 			buffw.flush();
+			
+			// 서버로부터 전송되어 온 요청 처리결과 제이슨 받자!!
+			String msg=buffr.readLine();
+			
+			// 파싱 시작, 파싱 후에는 객체 취급!!
+			JSONParser parser = new JSONParser();
+			JSONObject jsonObject=(JSONObject)parser.parse(msg);
+			
+			if(jsonObject.get("result").equals("ok")){
+				JSONObject obj=(JSONObject)jsonObject.get("data");
+				String name = (String)obj.get("name");
+
+				JOptionPane.showMessageDialog(this, name+"님 반갑습니다:)");
+				// 채팅 메인 띄우기!!
+				AppMain app = new AppMain();
+				
+			}else if(jsonObject.get("result").equals("fail")){
+				JOptionPane.showMessageDialog(this, "올바르지 않은 로그인 정보입니다.\n 다시 시도해주세요");
+			}
+			
 		} catch (IOException e) {
+			e.printStackTrace();
+		} catch (ParseException e) {
 			e.printStackTrace();
 		}
 	}
@@ -135,7 +164,8 @@ public class LoginForm extends JFrame implements ActionListener {
 	public void actionPerformed(ActionEvent e) {
 		loginCheck();
 	}
-
+	
+	
 	public static void main(String[] args) {
 		new LoginForm();
 

@@ -10,6 +10,12 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.OutputStreamWriter;
 import java.net.Socket;
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+
+import javax.naming.spi.DirStateFactory.Result;
 
 import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
@@ -20,10 +26,17 @@ public class ServerThread extends Thread{
 	BufferedReader buffr;
 	BufferedWriter buffw;
 	ServerMain serverMain;
-
+	
+	Connection con;
+	PreparedStatement pstmt;
+	ResultSet rs;
+	
+	StringBuffer sb = new StringBuffer();
+	
 	public ServerThread(ServerMain serverMain, Socket client) {
 		this.serverMain = serverMain;
 		this.client = client;
+		con=serverMain.con;
 		
 		try {
 			buffr = new BufferedReader(new InputStreamReader(client.getInputStream()));
@@ -52,6 +65,37 @@ public class ServerThread extends Thread{
 			// 클라이언트의 요청이 로그인이라면...
 			if(jsonObject.get("request").equals("login")){
 				serverMain.area.append("로그인을 원하는군요?");
+				
+				// 쿼리문 수행
+				String sql = "select * from chatmember where id=? and password=?";
+				pstmt=con.prepareStatement(sql);
+				pstmt.setString(1, (String)jsonObject.get("id"));
+				pstmt.setString(2, (String)jsonObject.get("password"));
+				
+				rs=pstmt.executeQuery(); // 쿼리문이 select문일 경우!
+				
+				// StringBuffer 사용 전 비우기!
+				sb.delete(0, sb.length()); // 데이터를 삭 지우는 것!! ?? 잘 모르겠다!!
+				
+				// rs를 문자열로 가공하여 보내주자!!
+					sb.append("{");
+					sb.append("\"response\":\"login\",");
+				
+				if(rs.next()){
+					String name=rs.getString("name");
+						sb.append("\"result\" : \"ok\",");
+						sb.append("\"data\" : {");
+						sb.append("\"name\" : \""+name+"\"");
+						sb.append("}");
+					}else{
+						sb.append("\"result\" : \"fail\",");
+						sb.append("\"data\" : {");
+						sb.append("}");
+					}
+					sb.append("}");
+					
+					release(pstmt,rs);
+
 				// 클라이언트의 요청이 대화라면...
 			}else if(jsonObject.get("request").equals("chat")){
 				
@@ -61,10 +105,12 @@ public class ServerThread extends Thread{
 				
 			}
 			
-			sendMsg(msg); // 다시 전송하기!!
+			sendMsg(sb.toString()); // 다시 전송하기!!
 		} catch (IOException e) {
 			e.printStackTrace();
 		} catch (ParseException e) {
+			e.printStackTrace();
+		} catch (SQLException e) {
 			e.printStackTrace();
 		}
 	}
@@ -82,6 +128,29 @@ public class ServerThread extends Thread{
 	public void run() {
 		while(true){
 			listen();	
+		}
+	}
+	
+	// 데이터베이스 관련 객체 닫는 메서드!!
+	// DML(insert, update, delete)
+	public void release(PreparedStatement pstmt){
+		if(pstmt!=null){
+			try {
+				pstmt.close();
+			} catch (SQLException e) {
+				e.printStackTrace();
+			}
+		}
+	}
+	
+	// select 문일 경우
+	public void release(PreparedStatement pstmt, ResultSet rs){
+		if(pstmt!=null){
+			try {
+				pstmt.close();
+			} catch (SQLException e) {
+				e.printStackTrace();
+			}
 		}
 	}
 }

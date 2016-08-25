@@ -9,9 +9,14 @@ import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.WindowAdapter;
+import java.awt.event.WindowEvent;
 import java.io.IOException;
 import java.net.ServerSocket;
 import java.net.Socket;
+import java.sql.Connection;
+import java.sql.DriverManager;
+import java.sql.SQLException;
 
 import javax.swing.JButton;
 import javax.swing.JFrame;
@@ -36,7 +41,15 @@ public class ServerMain extends JFrame implements Runnable, ActionListener{
 	int port=7777;
 	
 	// 드라이버 경로 설정!!
-	String driver
+	String driver = "oracle.jdbc.driver.OracleDriver";
+	
+	// 접속정보
+	String url="jdbc:oracle:thin:@localhost:1521:XE";
+	String user="java0819";
+	String password="java0819";
+	
+	Connection con;
+	
 	
 	public ServerMain() {
 		p_north = new JPanel();
@@ -53,8 +66,19 @@ public class ServerMain extends JFrame implements Runnable, ActionListener{
 		add(scroll);
 		
 		bt.addActionListener(this);
+		addWindowListener(new WindowAdapter() {
+			public void windowClosing(WindowEvent e) {
+				if(con!=null){
+					try {
+						con.close();
+					} catch (SQLException e1) {
+						e1.printStackTrace();
+					}
+				}
+				System.exit(0);
+			}
+		});
 		
-		setDefaultCloseOperation(EXIT_ON_CLOSE);
 		setBounds(400, 100, 300, 400);
 		setVisible(true);
 		
@@ -70,6 +94,20 @@ public class ServerMain extends JFrame implements Runnable, ActionListener{
 		try {
 			server = new ServerSocket(port);
 			area.append("서버생성완료 \n");
+			
+			// 오라클 접속!!
+			try {
+				Class.forName(driver);
+				con=DriverManager.getConnection(url,user,password);
+				if(con!=null){
+					setTitle("오라클 접속 성공");
+				}
+			} catch (SQLException e) {
+				e.printStackTrace();
+			} catch (ClassNotFoundException e) {
+				//e.printStackTrace();
+			}
+			
 			
 			// 서버는 수많은 접속자를 받아야하기 때문에 무한루프!!
 			while(true){
