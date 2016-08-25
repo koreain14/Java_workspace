@@ -35,7 +35,8 @@ public class ServerMain extends JFrame implements Runnable, ActionListener{
 	ServerSocket server;
 	int port=7777;
 	
-	
+	// 드라이버 경로 설정!!
+	String driver
 	
 	public ServerMain() {
 		p_north = new JPanel();
@@ -73,7 +74,7 @@ public class ServerMain extends JFrame implements Runnable, ActionListener{
 			// 서버는 수많은 접속자를 받아야하기 때문에 무한루프!!
 			while(true){
 				Socket client=server.accept();
-				ServerThread st = new ServerThread(client);
+				ServerThread st = new ServerThread(this, client);
 				st.start(); // 쓰레드한테 시작하라고 명령함!! 쓰레드는 분신 환영분신? 
 				area.append("접속자 감지!!\n");
 			}
