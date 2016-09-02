@@ -33,6 +33,7 @@ import javax.swing.JTable;
 import javax.swing.JTextArea;
 import javax.swing.JTextField;
 import javax.swing.SwingConstants;
+import javax.swing.border.Border;
 import javax.swing.event.TableModelEvent;
 import javax.swing.event.TableModelListener;
 
@@ -52,14 +53,21 @@ public class ProductMain extends JPanel implements ItemListener, ActionListener,
 	JButton bt_regist;
 	
 	// 센터
+	JPanel p_center;
+	JPanel p_north;
+	Choice ch_promotion;
+	JButton bt_send;
+	
 	JTable table;
 	JScrollPane scroll2;
 	ProductModel model;
 	HashMap<String, Integer> topMap; // 상위카테고리 정보를 담아 놓을 맵
 	HashMap<String, Integer> subMap; // 하위카테고리 정보를 담아 놓을 맵
+	HashMap<String, Integer> promotionMap; // 하위카테고리 정보를 담아 놓을 맵
+	
 	JFileChooser chooser;
 	
-	String savePath="C:/proudct_img"; // 이미지 파일이 저장될 경로!!
+	String savePath="C:/product_img"; // 이미지 파일이 저장될 경로!!
 	FileInputStream fis;
 	FileOutputStream fos;
 	File file=null;
@@ -103,12 +111,23 @@ public class ProductMain extends JPanel implements ItemListener, ActionListener,
 		add(p_west, BorderLayout.WEST);
 		
 		// 센터영역 구성
+		p_center = new JPanel();
+		p_north = new JPanel();
+		ch_promotion = new Choice();
+		bt_send = new JButton("프로모션으로 등록하기");
+		
+		p_center.setLayout(new BorderLayout());
+		p_north.add(ch_promotion);
+		p_north.add(bt_send);
+		p_center.add(p_north, BorderLayout.NORTH);
+		
 		model = new ProductModel();
 		table = new JTable(model);
 		scroll2 = new JScrollPane(table);
+		p_center.add(scroll2);
 
 		chooser = new JFileChooser("C:/Users/student/Downloads");
-		add(scroll2);
+		add(p_center);
 		
 		
 		this.setPreferredSize(new Dimension
@@ -164,6 +183,7 @@ public class ProductMain extends JPanel implements ItemListener, ActionListener,
 			}
 		});
 		bt_regist.addActionListener(this);
+		bt_send.addActionListener(this);
 		
 		// 테이블과 마우스 리스너 연결
 		table.addMouseListener(new MouseAdapter() {
@@ -180,8 +200,10 @@ public class ProductMain extends JPanel implements ItemListener, ActionListener,
 		
 		topMap = new HashMap<String, Integer>();
 		subMap = new HashMap<String, Integer>();
+		promotionMap = new HashMap<String, Integer>();
 		
 		getTopCategory();
+		getPromotionList();
 	}
 	
 	// 최상위 카테고리 목록 가져오기
@@ -347,6 +369,80 @@ public class ProductMain extends JPanel implements ItemListener, ActionListener,
 			}
 		}
 	}
+	
+	// 프로모션 목록 가져오기
+	public void getPromotionList(){
+		Connection con = AppMain.getConnection();
+		PreparedStatement pstmt=null;
+		ResultSet rs=null;
+		
+		String sql = "select * from promotion";
+		
+		try {
+			pstmt=con.prepareStatement(sql);
+			rs = pstmt.executeQuery();
+			
+			while(rs.next()){
+				String title=rs.getString("title");
+				ch_promotion.add(title);
+				promotionMap.put(rs.getString("title"), rs.getInt("promotion_id"));
+			}
+		} catch (SQLException e) {
+			e.printStackTrace();
+		} finally {
+			if(rs!=null){
+				try {
+					rs.close();
+				} catch (SQLException e) {
+					e.printStackTrace();
+				}
+			}
+			if(pstmt!=null){
+				try {
+					pstmt.close();
+				} catch (SQLException e) {
+					e.printStackTrace();
+				}
+			}
+
+		}
+		
+	}
+	
+	// 프로모션 상품 등록하기!!
+	public void registPromotionProduct(){
+		Connection con = AppMain.getConnection();
+		PreparedStatement pstmt = null;
+		
+		String sql="insert into promotion_product(promotion_product_id, product_id, promotion_id)";
+		sql=sql + " values(seq_promotion_product.nextval,?,?)";
+
+		try {
+			int product_id = Integer.parseInt((String)table.getValueAt(table.getSelectedRow(), 0));
+			pstmt = con.prepareStatement(sql);
+			pstmt.setInt(1, product_id);
+			pstmt.setInt(2, promotionMap.get(ch_promotion.getSelectedItem()));
+			int result = pstmt.executeUpdate();
+			
+			if(result!=0){
+				JOptionPane.showMessageDialog(this, "상품코드 "+product_id+"을" +ch_promotion.getSelectedItem()+"에 등록완료");
+			}
+			
+		} catch (SQLException e) {
+			e.printStackTrace();
+		} finally{
+			if(pstmt!=null){
+				try {
+					pstmt.close();
+				} catch (SQLException e) {
+					e.printStackTrace();
+				}
+			}
+		}
+		
+		
+	}
+	
 	@Override
 	public void itemStateChanged(ItemEvent e) {
 		// 초이스의 아이템을 바꿀 때, topcategory_id 출력!!
@@ -355,7 +451,13 @@ public class ProductMain extends JPanel implements ItemListener, ActionListener,
 	
 	@Override
 	public void actionPerformed(ActionEvent e) {
-		regist();
+		Object obj=e.getSource();
+		if(obj==bt_regist){
+			regist();
+		}else if(obj==bt_send){
+			// 프로모션 메서드 호출
+			registPromotionProduct();
+		}
 	}
 
 	@Override
