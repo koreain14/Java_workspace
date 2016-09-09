@@ -404,9 +404,7 @@ public class ProductMain extends JPanel implements ItemListener, ActionListener,
 					e.printStackTrace();
 				}
 			}
-
 		}
-		
 	}
 	
 	// 프로모션 상품 등록하기!!
@@ -439,8 +437,6 @@ public class ProductMain extends JPanel implements ItemListener, ActionListener,
 				}
 			}
 		}
-		
-		
 	}
 	
 	@Override
